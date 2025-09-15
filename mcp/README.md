@@ -1,28 +1,43 @@
-# MCP Hello World Server
+# MCP Server avec intégration Sylius
 
-Un serveur MCP (Model Context Protocol) simple en Python qui fournit des fonctionnalités de base.
+Un serveur MCP (Model Context Protocol) qui expose les fonctionnalités de base et l'accès aux produits Sylius.
 
 ## Fonctionnalités
 
+### Outils de base
 - `hello_world(name: str)` : Retourne un message de salutation
 - `get_current_time()` : Retourne l'heure actuelle
 
+### Outils Sylius
+- `get_sylius_products(limit: int, offset: int)` : Récupère la liste des produits Sylius
+- `get_sylius_product_by_code(code: str)` : Récupère un produit spécifique par son code
+- `search_sylius_products(query: str, limit: int)` : Recherche des produits par nom ou description
+
 ## Lancement avec Docker
 
+Le serveur MCP est maintenant intégré avec Sylius et utilise le même réseau Docker.
+
+### Avec le Makefile (recommandé)
+
 ```bash
-# Construire et lancer le serveur
-docker-compose up --build
-
-# Ou en arrière-plan
-docker-compose up --build -d
-
-# Arrêter le serveur
-docker-compose down
+# À la racine du projet
+make all-up          # Lance Sylius + MCP
+make all-down        # Arrête tout
+make status          # Vérifie le statut
+make logs           # Voit les logs
 ```
 
-## Utilisation
+### Manuellement
 
-Le serveur sera accessible sur `http://localhost:8001`
+```bash
+# Terminal 1: Sylius
+cd shop && docker-compose up -d
+
+# Terminal 2: MCP
+cd mcp && docker-compose up -d
+```
+
+Le serveur MCP sera accessible sur `http://localhost:8001` et se connecte automatiquement à la base de données Sylius.
 
 ### Endpoints
 
@@ -78,15 +93,61 @@ curl -X POST http://localhost:8001/mcp \
       "arguments": {"name": "Bob"}
     }
   }'
+
+# Récupérer les produits Sylius
+curl -X POST http://localhost:8001/mcp \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 3,
+    "method": "tools/call",
+    "params": {
+      "name": "get_sylius_products",
+      "arguments": {"limit": 5}
+    }
+  }'
+
+# Rechercher un produit par code
+curl -X POST http://localhost:8001/mcp \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 4,
+    "method": "tools/call",
+    "params": {
+      "name": "get_sylius_product_by_code",
+      "arguments": {"code": "MY_PRODUCT_CODE"}
+    }
+  }'
+
+# Rechercher des produits par nom
+curl -X POST http://localhost:8001/mcp \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 5,
+    "method": "tools/call",
+    "params": {
+      "name": "search_sylius_products",
+      "arguments": {"query": "t-shirt", "limit": 10}
+    }
+  }'
 ```
 
-## Test du serveur
+## Données de test
 
-Un script de test est fourni pour vérifier toutes les fonctionnalités :
+Le serveur crée automatiquement des données de test Sylius lors du premier démarrage :
 
-```bash
-python test_server.py
-```
+- **TSHIRT_RED** : T-Shirt Rouge (19.99€)
+- **JEANS_BLUE** : Jean Bleu (49.99€)
+- **SHOES_BLACK** : Chaussures Noires (79.99€)
+- **HAT_GREEN** : Chapeau Vert (14.99€)
+- **BAG_BROWN** : Sac Marron (39.99€)
+
+Chaque produit a :
+- Un variant par défaut
+- Un stock de 100 unités
+- Des traductions en anglais
 
 ## Développement local
 
@@ -110,10 +171,44 @@ mcp/
 └── README.md          # Documentation
 ```
 
-## Technologies utilisées
+## Architecture
 
-- **Python 3.11** : Langage de programmation
-- **FastAPI** : Framework web pour l'API REST
-- **Uvicorn** : Serveur ASGI
-- **Pydantic** : Validation des données
-- **Docker** : Containerisation
+Le serveur MCP se compose de :
+
+- **Serveur FastAPI** : API REST pour les appels d'outils
+- **Modèles SQLAlchemy** : Mapping des entités Sylius (Product, ProductVariant, etc.)
+- **Connexion MySQL** : Accès à la base de données Sylius
+- **Interface MCP** : Protocole JSON-RPC 2.0 pour l'intégration
+
+## Configuration de la base de données
+
+Le serveur se connecte automatiquement à la base de données MySQL de Sylius :
+
+- **Host** : mysql (dans le réseau Docker)
+- **Port** : 3306
+- **Database** : sylius
+- **User** : root (sans mot de passe)
+
+Pour utiliser une base de données différente, modifiez la variable `DATABASE_URL` dans `models.py`.
+
+## Test du serveur
+
+Un script de test complet est fourni :
+
+```bash
+python test_server.py
+```
+
+## Démonstration Sylius
+
+Pour voir les outils Sylius en action :
+
+```bash
+python demo_sylius.py
+```
+
+Ce script démontre :
+- Récupération des produits
+- Recherche par code
+- Recherche par nom/description
+- Utilisation de l'interface MCP

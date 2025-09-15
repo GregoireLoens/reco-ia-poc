@@ -16,3 +16,10 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    networks:
+      - reco-ia-network
+
+networks:
+  reco-ia-network:
+    external: true
+    name: reco-ia-network

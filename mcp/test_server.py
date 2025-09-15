@@ -1,7 +1,56 @@
 #!/usr/bin/env python3
 """
 Script de test pour le serveur MCP Hello World
-Teste toutes les fonctionnalités du serveur MCP
+Teste toutes les fonctionnali    # Test 9: Interface MCP - tools/call get_sylius_products
+    print("\n9. Test MCP - Appel get_sylius_products")
+    mcp_data = {
+        "jsonrpc": "2.0",
+        "id": 4,
+        "method": "tools/call",
+        "params": {
+            "name": "get_sylius_products",
+            "arguments": {"limit": 5}
+        }
+    }
+    result = test_endpoint(f"{BASE_URL}/mcp", "POST", mcp_data)
+    if result:
+        content = result.get("result", {}).get("content", [])
+        if content:
+            print(f"   Résultat: {content[0].get('text', 'N/A')[:200]}...")
+
+    # Test 10: Interface MCP - tools/call get_sylius_product_by_code
+    print("\n10. Test MCP - Appel get_sylius_product_by_code")
+    mcp_data = {
+        "jsonrpc": "2.0",
+        "id": 5,
+        "method": "tools/call",
+        "params": {
+            "name": "get_sylius_product_by_code",
+            "arguments": {"code": "test_product"}
+        }
+    }
+    result = test_endpoint(f"{BASE_URL}/mcp", "POST", mcp_data)
+    if result:
+        content = result.get("result", {}).get("content", [])
+        if content:
+            print(f"   Résultat: {content[0].get('text', 'N/A')[:200]}...")
+
+    # Test 11: Interface MCP - tools/call search_sylius_products
+    print("\n11. Test MCP - Appel search_sylius_products")
+    mcp_data = {
+        "jsonrpc": "2.0",
+        "id": 6,
+        "method": "tools/call",
+        "params": {
+            "name": "search_sylius_products",
+            "arguments": {"query": "test", "limit": 3}
+        }
+    }
+    result = test_endpoint(f"{BASE_URL}/mcp", "POST", mcp_data)
+    if result:
+        content = result.get("result", {}).get("content", [])
+        if content:
+            print(f"   Résultat: {content[0].get('text', 'N/A')[:200]}...")CP
 """
 
 import requests
@@ -125,6 +174,10 @@ def main():
     print("\nPour tester manuellement:")
     print(f"  curl {BASE_URL}/")
     print(f"  curl {BASE_URL}/tools")
+    print("\nNouveaux outils Sylius disponibles:")
+    print("  - get_sylius_products: Liste les produits")
+    print("  - get_sylius_product_by_code: Recherche par code")
+    print("  - search_sylius_products: Recherche par nom/description")
 
 if __name__ == "__main__":
     main()

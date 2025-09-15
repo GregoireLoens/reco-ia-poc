@@ -1,0 +1,26 @@
+# Configuration pour connecter à une base de données Sylius existante
+# Renommez ce fichier en docker-compose.override.yml pour l'utiliser
+
+version: '3.8'
+
+services:
+  mcp-server:
+    environment:
+      # Modifiez ces variables selon votre configuration Sylius
+      - SYLIUS_DB_HOST=host.docker.internal  # ou l'IP de votre serveur MySQL
+      - SYLIUS_DB_PORT=3306
+      - SYLIUS_DB_NAME=sylius
+      - SYLIUS_DB_USER=root
+      - SYLIUS_DB_PASSWORD=
+    networks:
+      # Retirez cette ligne si vous voulez utiliser une DB externe
+      # - sylius-network
+
+  # Commentez ce service si vous utilisez une DB externe
+  # mysql:
+  #   ...
+
+networks:
+  # Commentez ce réseau si vous utilisez une DB externe
+  # sylius-network:
+  #   ...
