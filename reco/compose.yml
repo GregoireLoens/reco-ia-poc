@@ -1,7 +1,0 @@
-services:
-  python-app:
-    build: .
-    volumes:
-      - .:/app
-    working_dir: /app
-    command: python app/main.py
